@@ -1,0 +1,161 @@
+{
+  "$defs": {
+    "Citation": {
+      "additionalProperties": false,
+      "properties": {
+        "source_key": {
+          "title": "Source Key",
+          "type": "string"
+        },
+        "quote": {
+          "maxLength": 2000,
+          "minLength": 5,
+          "title": "Quote",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source_key",
+        "quote"
+      ],
+      "title": "Citation",
+      "type": "object"
+    },
+    "Fact": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$",
+          "title": "Key",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "market",
+            "event",
+            "relation",
+            "counter"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "entity": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Entity"
+        },
+        "tickers": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Tickers",
+          "type": "array"
+        },
+        "statement": {
+          "maxLength": 400,
+          "minLength": 5,
+          "title": "Statement",
+          "type": "string"
+        },
+        "values": {
+          "additionalProperties": {
+            "type": "number"
+          },
+          "title": "Values",
+          "type": "object"
+        },
+        "citations": {
+          "items": {
+            "$ref": "#/$defs/Citation"
+          },
+          "maxItems": 10,
+          "minItems": 1,
+          "title": "Citations",
+          "type": "array"
+        }
+      },
+      "required": [
+        "key",
+        "kind",
+        "statement",
+        "citations"
+      ],
+      "title": "Fact",
+      "type": "object"
+    },
+    "Relationship": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "title": "Key",
+          "type": "string"
+        },
+        "from_entity": {
+          "minLength": 2,
+          "title": "From Entity",
+          "type": "string"
+        },
+        "to_ticker": {
+          "pattern": "^\\d{4}$",
+          "title": "To Ticker",
+          "type": "string"
+        },
+        "relation": {
+          "maxLength": 200,
+          "minLength": 2,
+          "title": "Relation",
+          "type": "string"
+        },
+        "fact_keys": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Fact Keys",
+          "type": "array"
+        }
+      },
+      "required": [
+        "key",
+        "from_entity",
+        "to_ticker",
+        "relation",
+        "fact_keys"
+      ],
+      "title": "Relationship",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "facts": {
+      "items": {
+        "$ref": "#/$defs/Fact"
+      },
+      "maxItems": 75,
+      "minItems": 1,
+      "title": "Facts",
+      "type": "array"
+    },
+    "relationships": {
+      "items": {
+        "$ref": "#/$defs/Relationship"
+      },
+      "title": "Relationships",
+      "type": "array"
+    }
+  },
+  "required": [
+    "facts",
+    "relationships"
+  ],
+  "title": "ExtractedEvidence",
+  "type": "object"
+}

@@ -1,0 +1,430 @@
+{
+  "$defs": {
+    "Benchmark": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "title": "Code",
+          "type": "string"
+        },
+        "as_of_date": {
+          "format": "date",
+          "title": "As Of Date",
+          "type": "string"
+        },
+        "source_key": {
+          "title": "Source Key",
+          "type": "string"
+        },
+        "weights": {
+          "additionalProperties": {
+            "type": "number"
+          },
+          "title": "Weights",
+          "type": "object"
+        }
+      },
+      "required": [
+        "code",
+        "as_of_date",
+        "source_key",
+        "weights"
+      ],
+      "title": "Benchmark",
+      "type": "object"
+    },
+    "Citation": {
+      "additionalProperties": false,
+      "properties": {
+        "source_key": {
+          "title": "Source Key",
+          "type": "string"
+        },
+        "quote": {
+          "maxLength": 2000,
+          "minLength": 5,
+          "title": "Quote",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source_key",
+        "quote"
+      ],
+      "title": "Citation",
+      "type": "object"
+    },
+    "Fact": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$",
+          "title": "Key",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "market",
+            "event",
+            "relation",
+            "counter"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "entity": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Entity"
+        },
+        "tickers": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Tickers",
+          "type": "array"
+        },
+        "statement": {
+          "maxLength": 400,
+          "minLength": 5,
+          "title": "Statement",
+          "type": "string"
+        },
+        "values": {
+          "additionalProperties": {
+            "type": "number"
+          },
+          "title": "Values",
+          "type": "object"
+        },
+        "citations": {
+          "items": {
+            "$ref": "#/$defs/Citation"
+          },
+          "maxItems": 10,
+          "minItems": 1,
+          "title": "Citations",
+          "type": "array"
+        }
+      },
+      "required": [
+        "key",
+        "kind",
+        "statement",
+        "citations"
+      ],
+      "title": "Fact",
+      "type": "object"
+    },
+    "History": {
+      "additionalProperties": false,
+      "properties": {
+        "ticker": {
+          "pattern": "^\\d{4}$",
+          "title": "Ticker",
+          "type": "string"
+        },
+        "date": {
+          "format": "date",
+          "title": "Date",
+          "type": "string"
+        },
+        "close": {
+          "exclusiveMinimum": 0,
+          "title": "Close",
+          "type": "number"
+        },
+        "source_key": {
+          "title": "Source Key",
+          "type": "string"
+        },
+        "benchmark_close": {
+          "exclusiveMinimum": 0,
+          "title": "Benchmark Close",
+          "type": "number"
+        },
+        "benchmark_source_key": {
+          "title": "Benchmark Source Key",
+          "type": "string"
+        }
+      },
+      "required": [
+        "ticker",
+        "date",
+        "close",
+        "source_key",
+        "benchmark_close",
+        "benchmark_source_key"
+      ],
+      "title": "History",
+      "type": "object"
+    },
+    "Price": {
+      "additionalProperties": false,
+      "properties": {
+        "ticker": {
+          "pattern": "^\\d{4}$",
+          "title": "Ticker",
+          "type": "string"
+        },
+        "date": {
+          "format": "date",
+          "title": "Date",
+          "type": "string"
+        },
+        "close": {
+          "exclusiveMinimum": 0,
+          "title": "Close",
+          "type": "number"
+        },
+        "source_key": {
+          "title": "Source Key",
+          "type": "string"
+        }
+      },
+      "required": [
+        "ticker",
+        "date",
+        "close",
+        "source_key"
+      ],
+      "title": "Price",
+      "type": "object"
+    },
+    "Relationship": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "title": "Key",
+          "type": "string"
+        },
+        "from_entity": {
+          "minLength": 2,
+          "title": "From Entity",
+          "type": "string"
+        },
+        "to_ticker": {
+          "pattern": "^\\d{4}$",
+          "title": "To Ticker",
+          "type": "string"
+        },
+        "relation": {
+          "maxLength": 200,
+          "minLength": 2,
+          "title": "Relation",
+          "type": "string"
+        },
+        "fact_keys": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Fact Keys",
+          "type": "array"
+        }
+      },
+      "required": [
+        "key",
+        "from_entity",
+        "to_ticker",
+        "relation",
+        "fact_keys"
+      ],
+      "title": "Relationship",
+      "type": "object"
+    },
+    "Source": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "pattern": "^[A-Za-z0-9_-]+$",
+          "title": "Key",
+          "type": "string"
+        },
+        "authority": {
+          "enum": [
+            "twse",
+            "tpex",
+            "taifex",
+            "mops",
+            "fininst",
+            "media",
+            "vendor",
+            "other"
+          ],
+          "title": "Authority",
+          "type": "string"
+        },
+        "url": {
+          "title": "Url",
+          "type": "string"
+        },
+        "content_as_of": {
+          "format": "date-time",
+          "title": "Content As Of",
+          "type": "string"
+        },
+        "fetched_at": {
+          "format": "date-time",
+          "title": "Fetched At",
+          "type": "string"
+        },
+        "published_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Published At"
+        },
+        "archive_url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Archive Url"
+        },
+        "snapshot_path": {
+          "title": "Snapshot Path",
+          "type": "string"
+        },
+        "sha256": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "authority",
+        "url",
+        "content_as_of",
+        "fetched_at",
+        "snapshot_path",
+        "sha256"
+      ],
+      "title": "Source",
+      "type": "object"
+    },
+    "TradingCalendar": {
+      "additionalProperties": false,
+      "properties": {
+        "source_key": {
+          "title": "Source Key",
+          "type": "string"
+        },
+        "trade_dates": {
+          "items": {
+            "format": "date",
+            "type": "string"
+          },
+          "minItems": 2,
+          "title": "Trade Dates",
+          "type": "array"
+        }
+      },
+      "required": [
+        "source_key",
+        "trade_dates"
+      ],
+      "title": "TradingCalendar",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "is_test": {
+      "title": "Is Test",
+      "type": "boolean"
+    },
+    "previous_close_date": {
+      "format": "date",
+      "title": "Previous Close Date",
+      "type": "string"
+    },
+    "sources": {
+      "items": {
+        "$ref": "#/$defs/Source"
+      },
+      "maxItems": 50,
+      "minItems": 1,
+      "title": "Sources",
+      "type": "array"
+    },
+    "facts": {
+      "items": {
+        "$ref": "#/$defs/Fact"
+      },
+      "minItems": 1,
+      "title": "Facts",
+      "type": "array"
+    },
+    "relationships": {
+      "items": {
+        "$ref": "#/$defs/Relationship"
+      },
+      "title": "Relationships",
+      "type": "array"
+    },
+    "prices": {
+      "items": {
+        "$ref": "#/$defs/Price"
+      },
+      "title": "Prices",
+      "type": "array"
+    },
+    "history": {
+      "items": {
+        "$ref": "#/$defs/History"
+      },
+      "title": "History",
+      "type": "array"
+    },
+    "benchmarks": {
+      "items": {
+        "$ref": "#/$defs/Benchmark"
+      },
+      "title": "Benchmarks",
+      "type": "array"
+    },
+    "calendar": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/TradingCalendar"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    }
+  },
+  "required": [
+    "is_test",
+    "previous_close_date",
+    "sources",
+    "facts",
+    "relationships",
+    "prices",
+    "history"
+  ],
+  "title": "EvidenceBundle",
+  "type": "object"
+}

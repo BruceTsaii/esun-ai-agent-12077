@@ -1,0 +1,136 @@
+{
+  "$defs": {
+    "ModelConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "provider": {
+          "default": "google",
+          "enum": [
+            "openai",
+            "google",
+            "anthropic",
+            "other"
+          ],
+          "title": "Provider",
+          "type": "string"
+        },
+        "model": {
+          "maxLength": 60,
+          "minLength": 3,
+          "title": "Model",
+          "type": "string"
+        },
+        "api_key_env": {
+          "default": "GEMINI_API_KEY",
+          "title": "Api Key Env",
+          "type": "string"
+        },
+        "base_url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Base Url"
+        },
+        "timeout_seconds": {
+          "default": 120,
+          "exclusiveMinimum": 0,
+          "maximum": 300,
+          "title": "Timeout Seconds",
+          "type": "number"
+        },
+        "max_output_tokens": {
+          "default": 16000,
+          "maximum": 64000,
+          "minimum": 1000,
+          "title": "Max Output Tokens",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "model"
+      ],
+      "title": "ModelConfig",
+      "type": "object"
+    },
+    "StrategyConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "max_event_weight": {
+          "default": 0.3,
+          "exclusiveMinimum": 0,
+          "maximum": 1,
+          "title": "Max Event Weight",
+          "type": "number"
+        },
+        "max_opportunity_weight": {
+          "default": 0.35,
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Max Opportunity Weight",
+          "type": "number"
+        },
+        "min_core_weight": {
+          "default": 0.45,
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Min Core Weight",
+          "type": "number"
+        },
+        "min_cash_buffer": {
+          "default": 0.03,
+          "exclusiveMaximum": 0.25,
+          "exclusiveMinimum": 0,
+          "title": "Min Cash Buffer",
+          "type": "number"
+        },
+        "max_event_age_days": {
+          "default": 45,
+          "minimum": 1,
+          "title": "Max Event Age Days",
+          "type": "integer"
+        },
+        "max_relationship_age_days": {
+          "default": 400,
+          "minimum": 1,
+          "title": "Max Relationship Age Days",
+          "type": "integer"
+        },
+        "max_benchmark_age_days": {
+          "default": 7,
+          "minimum": 0,
+          "title": "Max Benchmark Age Days",
+          "type": "integer"
+        },
+        "stress_price_move": {
+          "default": 0.03,
+          "maximum": 0.2,
+          "minimum": 0,
+          "title": "Stress Price Move",
+          "type": "number"
+        }
+      },
+      "title": "StrategyConfig",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "model": {
+      "$ref": "#/$defs/ModelConfig"
+    },
+    "strategy": {
+      "$ref": "#/$defs/StrategyConfig"
+    }
+  },
+  "required": [
+    "model"
+  ],
+  "title": "RunConfig",
+  "type": "object"
+}

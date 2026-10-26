@@ -1,0 +1,6 @@
+{
+  "model": {"provider": "google", "model": "gemini-2.5-flash", "api_key_env": "GEMINI_API_KEY"},
+  "strategy": {"max_event_weight": 0.30, "max_opportunity_weight": 0.35, "min_core_weight": 0.45,
+    "min_cash_buffer": 0.03, "max_event_age_days": 45, "max_relationship_age_days": 400,
+    "max_benchmark_age_days": 7, "stress_price_move": 0.03}
+}
