@@ -137,10 +137,18 @@ class DataPack(StrictModel):
 class ModelConfig(StrictModel):
     provider: Literal["openai", "google", "anthropic", "other"] = "google"
     model: str = Field(min_length=3, max_length=60)
+    execution_backend: Literal["api", "codex_cli"] = "api"
+    codex_executable: str = "codex"
     api_key_env: str = "GEMINI_API_KEY"
     base_url: str | None = None
     timeout_seconds: float = Field(default=120, gt=0, le=300)
     max_output_tokens: int = Field(default=16000, ge=1000, le=64000)
+
+    @model_validator(mode="after")
+    def backend_consistency(self):
+        if self.execution_backend == "codex_cli" and self.provider != "openai":
+            raise ValueError("Codex CLI backend 的 model_provider 須為 openai")
+        return self
 
 
 class StrategyConfig(StrictModel):

@@ -20,6 +20,20 @@
           "title": "Model",
           "type": "string"
         },
+        "execution_backend": {
+          "default": "api",
+          "enum": [
+            "api",
+            "codex_cli"
+          ],
+          "title": "Execution Backend",
+          "type": "string"
+        },
+        "codex_executable": {
+          "default": "codex",
+          "title": "Codex Executable",
+          "type": "string"
+        },
         "api_key_env": {
           "default": "GEMINI_API_KEY",
           "title": "Api Key Env",

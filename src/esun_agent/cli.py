@@ -8,7 +8,7 @@ from pathlib import Path
 
 from pydantic import ValidationError
 
-from .collectors import collect_quotes, public_fetch
+from .collectors import collect_history, collect_quotes, public_fetch
 from .common import AgentError, load_json, sha256, stamp, write_json
 from .diagnostics import test_gemini
 from .evidence import EvidenceBundle, build_observations, verify_bundle
@@ -25,7 +25,7 @@ def main(argv=None):
     inspect = sub.add_parser("inspect", help="檢查 DataPack 與摘要；不呼叫模型")
     inspect.add_argument("datapack", type=Path)
     doctor = sub.add_parser("doctor", help="檢查正式模式前置需求，不顯示金鑰")
-    doctor.add_argument("--config", type=Path, default=Path("config/google.json"))
+    doctor.add_argument("--config", type=Path, default=Path("config/codex.json"))
     doctor.add_argument("--datapack", type=Path, required=True)
     doctor.add_argument("--evidence", type=Path)
     probe = sub.add_parser(
@@ -33,10 +33,12 @@ def main(argv=None):
     )
     probe.add_argument("--config", type=Path, default=Path("config/google.json"))
     probe.add_argument("--output", type=Path)
+    model_probe = sub.add_parser("test-model", help="測試設定的模型執行器（含 Codex CLI）")
+    model_probe.add_argument("--config", type=Path, default=Path("config/codex.json"))
     execute = sub.add_parser("run", help="執行 Agent，只有正式檢核全通過才產出正式檔名")
     execute.add_argument("--datapack", type=Path, required=True)
     execute.add_argument("--evidence", type=Path, required=True)
-    execute.add_argument("--config", type=Path, default=Path("config/google.json"))
+    execute.add_argument("--config", type=Path, default=Path("config/codex.json"))
     execute.add_argument("--output", type=Path, default=Path("runs"))
     execute.add_argument("--mode", choices=["live", "test"], default="live")
     execute.add_argument("--test-response", type=Path)
@@ -44,20 +46,24 @@ def main(argv=None):
     validate.add_argument("plan", type=Path)
     validate.add_argument("--datapack", type=Path, required=True)
     validate.add_argument("--evidence", type=Path, required=True)
-    validate.add_argument("--config", type=Path, default=Path("config/google.json"))
+    validate.add_argument("--config", type=Path, default=Path("config/codex.json"))
     validate.add_argument("--mode", choices=["live", "test"], default="live")
     extract = sub.add_parser(
         "prepare-evidence", help="模型從公開來源快照擷取事件/關係，再逐條核對原文"
     )
     extract.add_argument("--manifest", type=Path, required=True)
     extract.add_argument("--datapack", type=Path, required=True)
-    extract.add_argument("--config", type=Path, default=Path("config/google.json"))
+    extract.add_argument("--config", type=Path, default=Path("config/codex.json"))
     extract.add_argument("--output", type=Path, required=True)
     extract.add_argument("--audit-root", type=Path, default=Path("runs"))
     extract.add_argument("--mode", choices=["live", "test"], default="live")
     quotes = sub.add_parser("collect-quotes", help="擷取並核對上市/上櫃最新官方收盤價")
     quotes.add_argument("--date", type=date.fromisoformat, required=True)
     quotes.add_argument("--output", type=Path, required=True)
+    historical = sub.add_parser("collect-history", help="擷取指定交易日的官方上市/上櫃收盤價")
+    historical.add_argument("--date", type=date.fromisoformat, required=True)
+    historical.add_argument("--market", choices=["twse", "tpex"], required=True)
+    historical.add_argument("--output", type=Path, required=True)
     fetch = sub.add_parser("fetch-source", help="留存公開來源原始快照與雜湊；不自動推定事實")
     fetch.add_argument("--url", required=True)
     fetch.add_argument("--output", type=Path, required=True)
@@ -71,10 +77,13 @@ def main(argv=None):
             cfg = RunConfig.model_validate(load_json(args.config))
             issues = []
             key = cfg.model.api_key_env
-            print(
-                f"模型 {cfg.model.provider}/{cfg.model.model}: {key} "
-                + ("已設定" if os.environ.get(key) else "缺少")
-            )
+            if cfg.model.execution_backend == "codex_cli":
+                print(f"模型 {cfg.model.model}: 使用 Codex CLI 既有登入，不要求 API Key")
+            else:
+                print(
+                    f"模型 {cfg.model.provider}/{cfg.model.model}: {key} "
+                    + ("已設定" if os.environ.get(key) else "缺少")
+                )
             try:
                 Provider(cfg.model).ready()
             except AgentError as e:
@@ -113,6 +122,24 @@ def main(argv=None):
                 write_json(args.output, report)
             print(json.dumps(report, ensure_ascii=False, indent=2))
             return 0 if report["passed"] else 2
+        elif args.command == "test-model":
+            cfg = RunConfig.model_validate(load_json(args.config))
+            result, usage = Provider(cfg.model).generate(
+                'Return exactly {"ok":true}. Use no tools.', {"task": "minimal_connectivity_test"}
+            )
+            passed = result == {"ok": True}
+            print(
+                json.dumps(
+                    {
+                        "passed": passed,
+                        "execution_backend": cfg.model.execution_backend,
+                        "model": cfg.model.model,
+                        "usage": usage,
+                    },
+                    ensure_ascii=False,
+                )
+            )
+            return 0 if passed else 2
         elif args.command == "run":
             folder, report = run(
                 args.datapack,
@@ -172,6 +199,14 @@ def main(argv=None):
             )
         elif args.command == "collect-quotes":
             print(json.dumps(collect_quotes(args.date, args.output), ensure_ascii=False, indent=2))
+        elif args.command == "collect-history":
+            print(
+                json.dumps(
+                    collect_history(args.date, args.market, args.output),
+                    ensure_ascii=False,
+                    indent=2,
+                )
+            )
         elif args.command == "fetch-source":
             if args.output.exists():
                 raise AgentError("不覆寫既有證據快照，請指定新路徑")

@@ -1,0 +1,8 @@
+{
+  "model": {
+    "provider": "openai",
+    "model": "gpt-5.4",
+    "execution_backend": "codex_cli",
+    "timeout_seconds": 300
+  }
+}

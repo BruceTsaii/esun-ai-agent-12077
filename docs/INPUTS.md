@@ -24,7 +24,7 @@
 
 `authority` 沿用官方定義；上市價量 twse，上櫃 tpex，研究與基金持股 fininst，報導 media。正式模式會確認官方 authority 的網域。來源是無金鑰的公開 HTTPS URL；金鑰、簽名URL不可放進證據。
 
-`collect-quotes` 留存原API回覆 `twse-raw.json`／`tpex-raw.json`、整理後 prices JSON 及 collection.json（URL、雜湊、抓取時間、來源日期）。最新API不提供任意歷史查詢；日期不符必須使用交易所歷史資料或既有已留存的快照，不可修改日期。歷史資料和市場基準指數應由已驗證的資料匯入流程取得，第一版沒有通用歷史下載器。
+`collect-quotes` 留存原API回覆 `twse-raw.json`／`tpex-raw.json`、整理後 prices JSON 及 collection.json（URL、雜湊、抓取時間、來源日期）。最新API不提供任意歷史查詢；日期不符必須使用交易所歷史資料或既有已留存的快照，不可修改日期。歷史資料和市場基準指數應由已驗證的資料匯入流程取得，已提供 `collect-history --date YYYY-MM-DD --market twse|tpex --output <新目錄>`，支援 TWSE MI_INDEX 與 TPEx 目前的 dailyQuotes 端點；必須核對回應日期及非空價格表。
 
 行情整理後快照為：
 

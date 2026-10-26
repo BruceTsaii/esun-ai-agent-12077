@@ -103,3 +103,110 @@ def collect_quotes(expected_date: date, output: Path):
     if failures:
         raise AgentError("；".join(failures))
     return manifest
+
+
+def normalize_history(data: dict, market: str, expected_date: date):
+    """Official TWSE MI_INDEX / current TPEx dailyQuotes; never ignore the response date."""
+    if data.get("stat") not in {"OK", "ok"}:
+        raise AgentError(f"{market}: 歷史行情來源未回報成功")
+    if exchange_date(str(data.get("date", ""))) != expected_date:
+        raise AgentError(f"{market}: 歷史端點回傳日期非 {expected_date}，拒絕當作前日行情")
+    tables = list(data.get("tables", []))
+    for key, value in data.items():
+        if key.startswith("fields"):
+            suffix = key[len("fields") :]
+            if "data" + suffix in data:
+                tables.append({"fields": value, "data": data["data" + suffix]})
+    allowed = {s["code"] for s in resource("universe.json")["stocks"] if s["market"] == market}
+    result = {}
+    for table in tables:
+        fields = table.get("fields", [])
+        code_name = next((f for f in ["證券代號", "代號"] if f in fields), None)
+        close_name = next((f for f in ["收盤價", "收盤"] if f in fields), None)
+        if code_name is None or close_name is None:
+            continue
+        ci, pi = fields.index(code_name), fields.index(close_name)
+        for row in table.get("data", []):
+            if len(row) <= max(ci, pi):
+                raise AgentError("歷史行情欄位不完整")
+            ticker = str(row[ci]).strip()
+            if ticker not in allowed:
+                continue
+            value = str(row[pi]).replace(",", "").strip()
+            if value in {"", "--", "---", "----"}:
+                continue
+            close = float(value)
+            if close <= 0 or ticker in result:
+                raise AgentError("歷史行情非正價格或重複代號")
+            result[ticker] = {"ticker": ticker, "date": str(expected_date), "close": close}
+    if not result:
+        raise AgentError("歷史行情沒有官方股票池價格或 API 欄位已變更")
+    return list(result.values())
+
+
+def collect_history(expected_date: date, market: str, output: Path):
+    if market not in {"twse", "tpex"}:
+        raise AgentError("市場須為 twse 或 tpex")
+    if output.exists() and any(output.iterdir()):
+        raise AgentError("不覆寫既有歷史行情，請使用新目錄")
+    if market == "twse":
+        url = (
+            "https://www.twse.com.tw/exchangeReport/MI_INDEX?response=json&date="
+            + expected_date.strftime("%Y%m%d")
+            + "&type=ALLBUT0999"
+        )
+    else:
+        url = (
+            "https://www.tpex.org.tw/www/zh-tw/afterTrading/dailyQuotes?date="
+            + expected_date.strftime("%Y/%m/%d")
+            + "&response=json"
+        )
+    raw = public_fetch(url)
+    output.mkdir(parents=True, exist_ok=True)
+    raw_file = output / f"{market}-raw.json"
+    raw_file.write_bytes(raw)
+    prices = normalize_history(json.loads(raw), market, expected_date)
+    path = output / f"{market}-prices.json"
+    write_json(
+        path,
+        {
+            "origin_url": url,
+            "origin_file": raw_file.name,
+            "origin_sha256": sha256(raw),
+            "prices": prices,
+        },
+    )
+    report = {
+        "url": url,
+        "authority": market,
+        "fetched_at": stamp(),
+        "date": str(expected_date),
+        "snapshot_path": path.name,
+        "sha256": sha256(path.read_bytes()),
+        "price_count": len(prices),
+    }
+    write_json(output / "collection.json", report)
+    return report
+
+
+def trading_dates(year: int, official_schedule: list[dict]):
+    """Weekdays minus actual holiday/no-trading rows, with explicit opening dates retained."""
+    from datetime import timedelta
+
+    closed, opened = set(), set()
+    for row in official_schedule:
+        day = exchange_date(row["Date"])
+        if day.year != year:
+            raise AgentError("官方休市表年度與要求不符")
+        name = row["Name"]
+        if "開始交易" in name or "最後交易" in name:
+            opened.add(day)
+        else:
+            closed.add(day)
+    current, end = date(year, 1, 1), date(year + 1, 1, 1)
+    result = []
+    while current < end:
+        if current in opened or (current.weekday() < 5 and current not in closed):
+            result.append(str(current))
+        current += timedelta(days=1)
+    return result

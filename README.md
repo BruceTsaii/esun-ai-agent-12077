@@ -2,15 +2,15 @@
 
 從公開事件出發，核對企業關係、營運敏感度、事件後相對價格、趨勢及反方證據，由模型自主決定目標配置；程式依官方公式換算委託並阻擋不合規結果。這是 CLI，不會自動上傳、送出競賽文件或操作券商。
 
-已在目前雲端實作並執行測試。**尚未完成真實模型與正式資料的端到端驗證**：目前執行個體尚未注入模型金鑰。最新查核已確認 Gemini 網域可達（無憑證請求 HTTP 403），TWSE 已可連線並解析100檔價格但回傳10/22資料，TPEX回報RemoteProtocolError；仍缺當期公開事件／企業關係、歷史價格與指數、30 檔主動 ETF 持股。2026-10-24 時尚未產生 10-26 收盤行情，不能偽造為 10-27 決策輸入。
+已在目前雲端實作並執行測試。**尚未完成真實模型與正式資料的端到端驗證**：已接上使用 ChatGPT 登入的 Codex CLI，不需要 Gemini 金鑰；目前 Codex 模型請求遭代理 CONNECT 403。TWSE／TPEx最新API可連線但只回傳10/22資料，TPEx的10/23歷史查詢價格表為空；仍缺當期公開事件／企業關係、歷史價格與指數、30 檔主動 ETF 持股。2026-10-24 時尚未產生 10-26 收盤行情，不能偽造為 10-27 決策輸入。
 
-**程式保存、安裝與離線測試均不需要 Gemini API Key。** 可以在本機使用已透過 ChatGPT 登入的 Codex CLI 開啟本專案繼續開發；這種登入不等同 Gemini/OpenAI API 憑證。本版尚未提供以 Codex CLI 登入授權作為投資模型執行器的介面，原有 API 供應商設定保留為可選配置。
+**程式保存、安裝與離線測試均不需要 Gemini API Key。** 可以在本機使用已透過 ChatGPT 登入的 Codex CLI 開啟本專案繼續開發；這種登入不等同 Gemini/OpenAI API 憑證。已提供 `codex_cli` 模型執行介面，預設使用 `config/codex.json`；原有 API 供應商設定保留為可選配置。執行器使用 CLI 管理的既有登入，不讀取或複製認證檔。
 
 競賽原始文件以儲存庫實際的 [`compitition/`](compitition/) 為準；保留此資料夾原本的拼字。
 
 ## 安裝與執行
 
-需要 Python 3.12+ 與 uv；依賴完整版本、雜湊在 `uv.lock`。使用現有隔離 checkout，不需另建 worktree。
+需要 Python 3.12+ 與 uv；正式 Codex 模式另需安裝 Codex CLI 並完成 `codex login`。依賴完整版本、雜湊在 `uv.lock`。使用現有隔離 checkout，不需另建 worktree。
 
 ```bash
 cd /workspace/esun-ai-agent-12077
@@ -36,6 +36,7 @@ bash scripts/demo.sh
 
 | 設定檔 | API | 金鑰環境變數 |
 |---|---|---|
+| `config/codex.json`（預設） | Codex CLI，使用既有 ChatGPT 登入 | 不需要 API Key |
 | `config/google.json` | Gemini Developer API | `GEMINI_API_KEY` |
 | `config/openai.json` | OpenAI Chat Completions | `OPENAI_API_KEY` |
 | `config/anthropic.json` | Anthropic Messages | `ANTHROPIC_API_KEY` |
@@ -53,11 +54,22 @@ bash scripts/demo.sh
 
 Gemini 診斷為選用功能。使用者目前不使用 Gemini，缺少該憑證不阻擋程式保存、安裝、測試或本機 Codex CLI 開發；未執行真實 API 模式時，不宣稱正式模型驗證完成。
 
+Codex CLI 模型連線測試：
+
+```bash
+.venv/bin/esun-agent test-model --config config/codex.json
+```
+
+本版呼叫 `codex exec`，以 read-only sandbox、ephemeral 模式、指定模型和新建回覆檔執行。忽略使用者的自訂 CLI 配置，保留 CLI 管理的登入認證；若 CLI 事件顯示額外工具使用，會拒收該回覆。`config/codex.json` 預設 `gpt-5.4`，可改為帳戶實際可用的模型；這個模型設定尚未完成真實連線驗證。`timeout_seconds` 適用 CLI，`max_output_tokens` 僅用於 API 供應商。
+
+2026-10-26 實測：CLI 的 `login status` 成功，但模型連線遭 HTTPS 代理 CONNECT 403；需在環境設定允許 `chatgpt.com`。TWSE 歷史行情另需 `www.twse.com.tw`，這兩個網域已存入環境設定草稿，仍須檢閱、儲存並發布後套用。不能把「已登入」當成模型呼叫成功。
+
 正式流程：
 
 ```bash
-# 最新行情 API：日期不符會退出；不會冒充歷史價格。須在該日收盤資料已公布後執行。
-.venv/bin/esun-agent collect-quotes --date 2026-10-26 --output data/live/quotes-20261026
+# 先用官方日曆確認 T-1；2026-10-26 為休市日，10-27 的 T-1 為 10-23。
+.venv/bin/esun-agent collect-history --date 2026-10-23 --market twse --output data/live/twse-20261023
+.venv/bin/esun-agent collect-history --date 2026-10-23 --market tpex --output data/live/tpex-20261023
 
 # 公開來源原始內容留存（換成實際公開 URL；不會自動認定其內容為事實）
 # .venv/bin/esun-agent fetch-source --url 'https://...' --output data/live/evidence/source.txt
@@ -66,13 +78,13 @@ Gemini 診斷為選用功能。使用者目前不使用 Gemini，缺少該憑證
 .venv/bin/esun-agent prepare-evidence \
   --manifest data/live/evidence/manifest.json \
   --datapack data/live/DataPack.json \
-  --output data/live/evidence/bundle.json --config config/google.json
+  --output data/live/evidence/bundle.json --config config/codex.json
 
 .venv/bin/esun-agent doctor --datapack data/live/DataPack.json \
-  --evidence data/live/evidence/bundle.json --config config/google.json
+  --evidence data/live/evidence/bundle.json --config config/codex.json
 
 .venv/bin/esun-agent run --mode live --datapack data/live/DataPack.json \
-  --evidence data/live/evidence/bundle.json --config config/google.json
+  --evidence data/live/evidence/bundle.json --config config/codex.json
 ```
 
 `manifest.json` 的資料契約與來源處理詳見 [資料輸入](docs/INPUTS.md)，機器可讀格式見 [Evidence Schema](docs/schemas/evidence.schema.json)。可用相同格式匯入外部資料服務已擷取且可核對的事實；程式不接受人為指定的正式目標配置。第一版不含全網搜尋、登入後台抓取或跨投信網站的通用爬蟲，來源 URL 與快照清單須由資料蒐集流程提供。
@@ -84,7 +96,7 @@ Gemini 診斷為選用功能。使用者目前不使用 Gemini，缺少該憑證
 ```bash
 .venv/bin/esun-agent validate runs/live/<run_id>/D-Plan_<team_id>_<trade_date>.json \
   --datapack runs/live/<run_id>/datapack.json \
-  --evidence runs/live/<run_id>/evidence/bundle.json --config config/google.json
+  --evidence runs/live/<run_id>/evidence/bundle.json --config config/codex.json
 ```
 
 請閱讀同目錄 `validation.json`、`run.json`。本機通過不等於官方收件或結算通過。提交時間以官方系統為準：交易日前一日 19:30 至交易日 08:55（台北）；上傳後仍須「送出繳交」，並確認當日委託。

@@ -19,6 +19,10 @@ class Provider:
         self.transport = transport
 
     def ready(self):
+        if self.config.execution_backend == "codex_cli":
+            from .codex_provider import CodexProvider
+
+            return CodexProvider(self.config).ready()
         if not os.environ.get(self.config.api_key_env):
             raise AgentError(f"缺模型憑證環境變數 {self.config.api_key_env}；請於環境設定安全提供")
         base = self.config.base_url
@@ -30,6 +34,13 @@ class Provider:
             raise AgentError("OpenAI-compatible 自訂供應商必須設定 base_url")
 
     def generate(self, system: str, payload: dict) -> tuple[dict, dict]:
+        if self.config.execution_backend == "codex_cli":
+            from .codex_provider import CodexProvider
+
+            backend = CodexProvider(self.config)
+            result = backend.generate(system, payload)
+            self.last_call = backend.last_call
+            return result
         self.ready()
         c = self.config
         key = os.environ[c.api_key_env]

@@ -77,3 +77,14 @@
 競賽原始文件採用 main 已存在的 `compitition/` 路徑。與舊附件副本逐一比對 SHA256：14份原檔完全一致，未修改原檔；文字擷取與附件雜湊表亦收整至該資料夾。README、測試與股票池來源註記已改用實際路徑。
 
 使用者不使用 Gemini，預計以 ChatGPT 登入本機 Codex CLI 繼續開發。本次保存不執行真實模型、不要求模型憑證；安裝與離線測試不依賴金鑰。Codex CLI 登入授權的模型執行器尚未實作，這不阻擋本次程式提交與推送。先前的 API 診斷與歷史紀錄保留，但不代表目前要求設定 Gemini。
+
+## 代為產出正式 D-Plan 的執行嘗試（2026-10-26）
+
+- 新增 `codex_cli` 執行器、`config/codex.json` 與 `test-model`。正式流程改預設使用 Codex CLI 既有 ChatGPT 登入，保留 API 供應商為選用配置，不要求 Gemini 金鑰。模型回覆經相同的引用、配置、股數與合規驗證，沒有移除或降低正式檢查。
+- 實際 `codex login status` 回報 Logged in using ChatGPT；共享／獨立runtime最小請求皆未取得模型回覆。獨立請求的事件明確顯示 HTTP CONNECT 403，指向 chatgpt.com。不是據登入狀態推定模型已可用；沒有擷取帳戶token、讀取認證檔或關閉TLS。
+- 官方休市表明確列出10/26補假，故DataPack指向10/27時需要10/23收盤。TWSE與TPEx最新OpenAPI都仍回傳10/22，已解析官方池內100及50檔，但不能作為正式10/27輸入。
+- TPEx舊歷史端點忽略日期而回傳10/22；目前dailyQuotes端點回傳10/23與HTTP 200，但表格為空。新增日期、非空表、欄位與股票池的實質檢查，沒有把HTTP 200算作有效行情。
+- TWSE歷史主站 www.twse.com.tw 同樣遭代理CONNECT 403。已將 chatgpt.com、www.twse.com.tw 加入設定草稿，保留原網域；需要使用者檢閱、儲存並發布使其套用。
+- 本次沒有產出可繳交D-Plan；另記錄 `runs/submission-readiness-TEAM_12077-20261027.json`。尚缺正確行情／歷史基準、事件與企業關係證據、反方事實及官方30檔主動ETF當期持股，不能用測試資料或全現金空單替代。
+
+本次更新後實際執行 `.venv/bin/pytest -q`：103 passed；Ruff、格式檢查與source/wheel建置通過。Codex成功生成與完整投資流程的新增測試使用mock，不代表代理403已解除或真實D-Plan完成。

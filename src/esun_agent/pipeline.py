@@ -122,7 +122,7 @@ def run(
         bundle_raw = load_json(evidence)
         bundle = EvidenceBundle.model_validate(bundle_raw)
         if response_file and mode != "test":
-            raise AgentError("正式模式禁止預先指定模型回覆/手動配置；請使用模型 API")
+            raise AgentError("正式模式禁止預先指定模型回覆/手動配置；請使用已設定的模型執行器")
         verified = verify_bundle(bundle, evidence.parent, dp, config.strategy, mode)
         sources, observations, obs_keys, features = build_observations(bundle, verified)
         # Retain the exact evidence used, beside the DataPack and code for replay/audit.
@@ -169,6 +169,9 @@ def run(
                 else provider.generate(system, payload)
             )
             write_json(run_dir / f"response-{attempt}.json", raw)
+            runtime = getattr(provider, "last_call", None)
+            if runtime:
+                record.setdefault("model_runtime_calls", []).append(runtime)
             for k, v in usage.items():
                 totals[k] = totals.get(k, 0) + v
             try:
