@@ -1,0 +1,45 @@
+一、參賽隊伍請透過以下步驟，取得免費 Google Cloud 指定線上課程平台免費積分，以用
+於課程折抵：
+
+ ●   步驟一：請確認您已完成 Google Cloud Skills Boost 帳號註冊，如果您尚未完成帳
+     號註冊，請點擊此完成註冊。(點選查看帳號創建指南)
+
+
+
+
+ ●   步驟二：請使用無痕視窗 (incognito window <Ctrl/Cmd+Shift+N>) 開啟此連結：
+     https://www.skills.google/catalog?qlcampaign=6y-cubai-15
+
+ ●   步驟三：使用無痕視窗點擊連結後，登入您的 Skill Boost 帳號，便可取得 9 積分
+     點數 (點此確認)
+  ●   步驟四：使用 9 積分點數 完成指定線上課程；如您以 100% 完成度完成指定線上課
+      程，還可額外取得 Google Cloud Skill Boost 的 200 積分點數，用於個人平台學習
+      使用 (積分有效期限至 12/31 止)
+
+二、參賽隊伍完成指定線上課程後，須於 2026/9/20~2026/10/19 間透過 email 方式提交課程
+完成證明截圖至主辦方信箱(intelligent-finance@esunbank.com)，由主辦方審查確認為有
+效提交後，預計三個工作日左右於本次競賽頁面(連結)提供每隊伍 Token credit 序號一組，
+請參賽隊伍自行至競賽頁面確認。
+
+  ●   參賽隊伍不須全體隊員皆提交，由任一隊員提交課程完成證明截圖即可
+
+  ●   寄件 email 地址須和 AI CUP 報名系統所註冊的 email 信箱相同
+
+  ●   信件主旨標題請寫：課程完成證明截圖-Team_XXXXX，以利主辦方查找及核驗。其中隊
+      伍編號須和 AI CUP 報名系統註冊後獲得的隊伍編號相同
+
+
+
+
+三、Token credit 兌換方式：
+
+  1. 進入 Google Cloud Console 建立 Billing Account
+  2. 進入該連結 console.cloud.google.com/billing/redeem，輸入 Token Credit 折扣
+     碼，就可以獲得 Token Credit
+
+
+
+註：每組序號需於 11/30 前完成開通，未使用完畢的抵免額會於 12/31 後失效；如關於
+Token Credit 開通遇到任何問題，請直接透過此連結提交問題：
+https://cloud.google.com/support/billing
+

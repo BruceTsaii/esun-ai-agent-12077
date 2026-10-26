@@ -218,3 +218,9 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Agent runtime data: account, credentials, model responses and evidence snapshots
+/data/live/*
+!/data/live/.gitkeep
+/runs/
+/.uv-cache/

@@ -1,0 +1,131 @@
+{
+  "$defs": {
+    "StockAnalysis": {
+      "additionalProperties": false,
+      "properties": {
+        "ticker": {
+          "pattern": "^\\d{4}$",
+          "title": "Ticker",
+          "type": "string"
+        },
+        "target_weight": {
+          "maximum": 0.25,
+          "minimum": 0,
+          "title": "Target Weight",
+          "type": "number"
+        },
+        "bucket": {
+          "enum": [
+            "core",
+            "opportunity",
+            "exit"
+          ],
+          "title": "Bucket",
+          "type": "string"
+        },
+        "event_keys": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Event Keys",
+          "type": "array"
+        },
+        "relationship_keys": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Relationship Keys",
+          "type": "array"
+        },
+        "premise_refs": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 10,
+          "minItems": 1,
+          "title": "Premise Refs",
+          "type": "array"
+        },
+        "impact_sensitivity": {
+          "maxLength": 250,
+          "minLength": 15,
+          "title": "Impact Sensitivity",
+          "type": "string"
+        },
+        "price_review": {
+          "maxLength": 250,
+          "minLength": 15,
+          "title": "Price Review",
+          "type": "string"
+        },
+        "logic": {
+          "maxLength": 450,
+          "minLength": 20,
+          "title": "Logic",
+          "type": "string"
+        },
+        "counter_evidence": {
+          "maxLength": 500,
+          "minLength": 10,
+          "title": "Counter Evidence",
+          "type": "string"
+        },
+        "counter_refs": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 5,
+          "minItems": 1,
+          "title": "Counter Refs",
+          "type": "array"
+        },
+        "funding_for_tickers": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 5,
+          "title": "Funding For Tickers",
+          "type": "array"
+        }
+      },
+      "required": [
+        "ticker",
+        "target_weight",
+        "bucket",
+        "event_keys",
+        "relationship_keys",
+        "premise_refs",
+        "impact_sensitivity",
+        "price_review",
+        "logic",
+        "counter_evidence",
+        "counter_refs"
+      ],
+      "title": "StockAnalysis",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "market_view": {
+      "additionalProperties": true,
+      "title": "Market View",
+      "type": "object"
+    },
+    "analyses": {
+      "items": {
+        "$ref": "#/$defs/StockAnalysis"
+      },
+      "maxItems": 60,
+      "minItems": 1,
+      "title": "Analyses",
+      "type": "array"
+    }
+  },
+  "required": [
+    "market_view",
+    "analyses"
+  ],
+  "title": "Analysis",
+  "type": "object"
+}

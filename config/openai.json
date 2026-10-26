@@ -1,0 +1,1 @@
+{"model": {"provider": "openai", "model": "gpt-4.1", "api_key_env": "OPENAI_API_KEY"}}

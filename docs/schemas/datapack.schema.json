@@ -1,0 +1,306 @@
+{
+  "$defs": {
+    "Account": {
+      "additionalProperties": false,
+      "properties": {
+        "cash": {
+          "minimum": 0,
+          "title": "Cash",
+          "type": "number"
+        },
+        "cash_ratio_tradable": {
+          "anyOf": [
+            {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Cash Ratio Tradable"
+        },
+        "nav_tradable": {
+          "exclusiveMinimum": 0,
+          "title": "Nav Tradable",
+          "type": "number"
+        },
+        "aum": {
+          "exclusiveMinimum": 0,
+          "title": "Aum",
+          "type": "number"
+        },
+        "receivable_cash": {
+          "minimum": 0,
+          "title": "Receivable Cash",
+          "type": "number"
+        },
+        "holdings_count": {
+          "minimum": 0,
+          "title": "Holdings Count",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "cash",
+        "cash_ratio_tradable",
+        "nav_tradable",
+        "aum",
+        "receivable_cash",
+        "holdings_count"
+      ],
+      "title": "Account",
+      "type": "object"
+    },
+    "Compliance": {
+      "additionalProperties": false,
+      "properties": {
+        "violations": {
+          "minimum": 0,
+          "title": "Violations",
+          "type": "integer"
+        },
+        "notices": {
+          "minimum": 0,
+          "title": "Notices",
+          "type": "integer"
+        },
+        "incidents": {
+          "items": {
+            "$ref": "#/$defs/Incident"
+          },
+          "title": "Incidents",
+          "type": "array"
+        }
+      },
+      "required": [
+        "violations",
+        "notices",
+        "incidents"
+      ],
+      "title": "Compliance",
+      "type": "object"
+    },
+    "Holding": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "pattern": "^\\d{4}$",
+          "title": "Code",
+          "type": "string"
+        },
+        "shares": {
+          "minimum": 0,
+          "title": "Shares",
+          "type": "integer"
+        },
+        "receivable_shares": {
+          "minimum": 0,
+          "title": "Receivable Shares",
+          "type": "integer"
+        },
+        "close_price": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Close Price"
+        },
+        "tradable_weight": {
+          "anyOf": [
+            {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Tradable Weight"
+        }
+      },
+      "required": [
+        "code",
+        "shares",
+        "receivable_shares",
+        "close_price",
+        "tradable_weight"
+      ],
+      "title": "Holding",
+      "type": "object"
+    },
+    "Incident": {
+      "additionalProperties": false,
+      "properties": {
+        "date": {
+          "format": "date",
+          "title": "Date",
+          "type": "string"
+        },
+        "check_code": {
+          "title": "Check Code",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "warn",
+            "fail"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "message": {
+          "title": "Message",
+          "type": "string"
+        }
+      },
+      "required": [
+        "date",
+        "check_code",
+        "status",
+        "message"
+      ],
+      "title": "Incident",
+      "type": "object"
+    },
+    "PreviousOrders": {
+      "additionalProperties": false,
+      "properties": {
+        "outcome": {
+          "enum": [
+            "none",
+            "unknown",
+            "voided",
+            "executed"
+          ],
+          "title": "Outcome",
+          "type": "string"
+        },
+        "void_reasons": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Void Reasons",
+          "type": "array"
+        },
+        "excluded_codes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Excluded Codes",
+          "type": "array"
+        }
+      },
+      "required": [
+        "outcome",
+        "void_reasons",
+        "excluded_codes"
+      ],
+      "title": "PreviousOrders",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "3.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "doc_type": {
+      "const": "DataPack",
+      "title": "Doc Type",
+      "type": "string"
+    },
+    "team_id": {
+      "pattern": "^[A-Za-z0-9_-]{1,32}$",
+      "title": "Team Id",
+      "type": "string"
+    },
+    "trade_date": {
+      "format": "date",
+      "title": "Trade Date",
+      "type": "string"
+    },
+    "as_of_date": {
+      "anyOf": [
+        {
+          "format": "date",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "As Of Date"
+    },
+    "generated_at": {
+      "format": "date-time",
+      "title": "Generated At",
+      "type": "string"
+    },
+    "missing": {
+      "items": {
+        "enum": [
+          "prev_settlement",
+          "prev_close"
+        ],
+        "type": "string"
+      },
+      "title": "Missing",
+      "type": "array"
+    },
+    "prev_day_orders": {
+      "$ref": "#/$defs/PreviousOrders"
+    },
+    "account": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Account"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "holdings": {
+      "anyOf": [
+        {
+          "items": {
+            "$ref": "#/$defs/Holding"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Holdings"
+    },
+    "compliance": {
+      "$ref": "#/$defs/Compliance"
+    }
+  },
+  "required": [
+    "schema_version",
+    "doc_type",
+    "team_id",
+    "trade_date",
+    "as_of_date",
+    "generated_at",
+    "missing",
+    "prev_day_orders",
+    "account",
+    "holdings",
+    "compliance"
+  ],
+  "title": "DataPack",
+  "type": "object"
+}
